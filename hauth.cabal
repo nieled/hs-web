@@ -30,8 +30,14 @@ library
       Paths_hauth
   hs-source-dirs:
       src
+  default-extensions:
+      NoImplicitPrelude
+      OverloadedStrings
   build-depends:
       base >=4.7 && <5
+    , classy-prelude
+    , time
+    , time-lens
   default-language: Haskell2010
 
 executable hauth-exe
@@ -40,10 +46,16 @@ executable hauth-exe
       Paths_hauth
   hs-source-dirs:
       app
+  default-extensions:
+      NoImplicitPrelude
+      OverloadedStrings
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , classy-prelude
     , hauth
+    , time
+    , time-lens
   default-language: Haskell2010
 
 test-suite hauth-test
@@ -53,8 +65,14 @@ test-suite hauth-test
       Paths_hauth
   hs-source-dirs:
       test
+  default-extensions:
+      NoImplicitPrelude
+      OverloadedStrings
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , classy-prelude
     , hauth
+    , time
+    , time-lens
   default-language: Haskell2010

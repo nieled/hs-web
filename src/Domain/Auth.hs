@@ -1,8 +1,9 @@
 module Domain.Auth where
 
-import ClassyPrelude
-import Domain.Validation
-import Text.Regex.PCRE.Heavy
+import           ClassyPrelude
+import           Control.Monad.Except
+import           Domain.Validation
+import           Text.Regex.PCRE.Heavy
 
 newtype Email = Email { emailRaw :: Text } deriving (Show, Eq)
 
@@ -29,18 +30,78 @@ mkPassword = validate Password
   , regexMatches [re|[a-z]|] "Should contain lowercase letter"
   ]
 
-data Auth = Auth
-  { authEmail :: Email
-  , authPassword :: Password
-  } deriving (Show, Eq)
+data Auth
+  = Auth
+      { authEmail    :: Email
+      , authPassword :: Password
+      }
+  deriving (Show, Eq)
 
-data RegistrationError
-  = RegistrationErrorEmailToken
+data RegistrationError = RegistrationErrorEmailToken
   deriving (Show, Eq)
 
 data EmailValidationErr = EmailValidationErrInvalidEmail
-data PasswordValidationErr
-  = PasswordValidationErrLength Int
+data PasswordValidationErr = PasswordValidationErrLength Int
   | PasswordValidationErrMustContainUpperCase
   | PasswordValidationErrMustContainLowerCase
   | PasswordValidationErrMustContainNumber
+
+type VerificationCode = Text
+
+class Monad m => AuthRepo m where
+  addAuth :: Auth -> m (Either RegistrationError VerificationCode)
+  setEmailAsVerified :: VerificationCode -> m (Either EmailVerificationError ())
+  findUserByAuth :: Auth -> m (Maybe (UserId, Bool))
+
+class Monad m => EmailVerificationNotif m where
+  notifyEmailVerification :: Email -> VerificationCode -> m ()
+
+class Monad m => SessionRepo m where
+  newSession :: UserId -> m SessionId
+  findUserIdBySessionId :: SessionId -> m (Maybe UserId)
+
+instance AuthRepo IO where
+  addAuth (Auth email pass) = do
+    putStrLn $ "adding auth: " <> rawEmail email
+    return $ Right "fake verification code"
+
+instance EmailVerificationNotif IO where
+  notifyEmailVerification email vCode =
+    putStrLn $ "Notify " <> rawEmail email <> " - " <> vCode
+
+register
+  :: (AuthRepo m, EmailVerificationNotif m)
+  => Auth
+  -> m (Either RegistrationError ())
+register auth =
+  runExceptT $ do
+    vCode <- ExceptT $ addAuth auth
+    let email = authEmail auth
+    lift $ notifyEmailVerification email vCode
+
+data EmailVerificationError
+  = EmailVerificationErrorInvalidCode
+      deriving (Show, Eq)
+
+verifyEmail
+  :: AuthRepo m
+  => VerificationCode
+  -> m (Either EmailVerificationError ())
+verifyEmail = setEmailAsVerified
+
+type UserId = Int
+type SessionId = Text
+
+data LoginError = LoginErrorInvalidAuth
+    | LoginErrorNotVerified
+      deriving (Show, Eq)
+
+login :: (AuthRepo m, SessionRepo m) => Auth -> m (Either LoginError SessionId)
+login auth =
+  runExceptT $ do
+    result <- lift $ findUserByAuth auth
+    -- case result of
+    undefined
+
+resolveSessionId :: SessionRepo m => SessionId -> m (Maybe UserId)
+resolveSessionId = findUserIdBySessionId

@@ -33,7 +33,7 @@ import           Control.Monad.Except
 import           Domain.Validation
 import           Text.Regex.PCRE.Heavy
 
-newtype Email = Email { emailRaw :: Text } deriving (Show, Eq)
+newtype Email = Email { emailRaw :: Text } deriving (Show, Eq, Ord)
 newtype Password = Password { passwordRaw :: Text } deriving (Show, Eq)
 type VerificationCode = Text
 type UserId = Int

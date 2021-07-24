@@ -6,6 +6,16 @@ import           Domain.Validation
 import           Text.Regex.PCRE.Heavy
 
 newtype Email = Email { emailRaw :: Text } deriving (Show, Eq)
+newtype Password = Password { passwordRaw :: Text } deriving (Show, Eq)
+data Auth
+  = Auth
+      { authEmail    :: Email
+      , authPassword :: Password
+      }
+  deriving (Show, Eq)
+type VerificationCode = Text
+type UserId = Int
+type SessionId = Text
 
 rawEmail :: Email -> Text
 rawEmail = emailRaw
@@ -16,8 +26,6 @@ mkEmail = validate Email
       [re|^[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,64}$|]
       "Not a valid email"
   ]
-
-newtype Password = Password { passwordRaw :: Text } deriving (Show, Eq)
 
 rawPassword :: Password -> Text
 rawPassword = passwordRaw
@@ -30,23 +38,19 @@ mkPassword = validate Password
   , regexMatches [re|[a-z]|] "Should contain lowercase letter"
   ]
 
-data Auth
-  = Auth
-      { authEmail    :: Email
-      , authPassword :: Password
-      }
-  deriving (Show, Eq)
-
 data RegistrationError = RegistrationErrorEmailToken
   deriving (Show, Eq)
-
 data EmailValidationErr = EmailValidationErrInvalidEmail
 data PasswordValidationErr = PasswordValidationErrLength Int
   | PasswordValidationErrMustContainUpperCase
   | PasswordValidationErrMustContainLowerCase
   | PasswordValidationErrMustContainNumber
-
-type VerificationCode = Text
+data EmailVerificationError
+  = EmailVerificationErrorInvalidCode
+      deriving (Show, Eq)
+data LoginError = LoginErrorInvalidAuth
+    | LoginErrorNotVerified
+      deriving (Show, Eq)
 
 class Monad m => AuthRepo m where
   addAuth :: Auth -> m (Either RegistrationError VerificationCode)
@@ -79,22 +83,8 @@ register auth =
     let email = authEmail auth
     lift $ notifyEmailVerification email vCode
 
-data EmailVerificationError
-  = EmailVerificationErrorInvalidCode
-      deriving (Show, Eq)
-
-verifyEmail
-  :: AuthRepo m
-  => VerificationCode
-  -> m (Either EmailVerificationError ())
+verifyEmail :: AuthRepo m => VerificationCode -> m (Either EmailVerificationError ())
 verifyEmail = setEmailAsVerified
-
-type UserId = Int
-type SessionId = Text
-
-data LoginError = LoginErrorInvalidAuth
-    | LoginErrorNotVerified
-      deriving (Show, Eq)
 
 login :: (AuthRepo m, SessionRepo m) => Auth -> m (Either LoginError SessionId)
 login auth =

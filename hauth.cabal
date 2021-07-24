@@ -38,10 +38,13 @@ library
       OverloadedStrings
       QuasiQuotes
       TemplateHaskell
+      ConstraintKinds
+      FlexibleContexts
   build-depends:
       aeson
     , base >=4.7 && <5
     , classy-prelude
+    , data-has
     , mtl
     , template-haskell
     , time
@@ -59,11 +62,14 @@ executable hauth-exe
       OverloadedStrings
       QuasiQuotes
       TemplateHaskell
+      ConstraintKinds
+      FlexibleContexts
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
     , base >=4.7 && <5
     , classy-prelude
+    , data-has
     , hauth
     , mtl
     , template-haskell
@@ -83,11 +89,14 @@ test-suite hauth-test
       OverloadedStrings
       QuasiQuotes
       TemplateHaskell
+      ConstraintKinds
+      FlexibleContexts
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
     , base >=4.7 && <5
     , classy-prelude
+    , data-has
     , hauth
     , mtl
     , template-haskell

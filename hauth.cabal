@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Domain.Auth
+      Domain.Registration
       Domain.Validation
       Lib
   other-modules:

@@ -1,0 +1,13 @@
+cradle:
+  stack:
+    - path: "./src"
+      component: "hauth:lib"
+
+    - path: "./app/Main.hs"
+      component: "hauth:exe:hauth-exe"
+
+    - path: "./app/Paths_hauth.hs"
+      component: "hauth:exe:hauth-exe"
+
+    - path: "./test"
+      component: "hauth:test:hauth-test"

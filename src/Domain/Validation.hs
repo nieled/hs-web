@@ -2,11 +2,11 @@ module Domain.Validation
   ( validate
   , rangeBetween
   , lengthBetween
-  , regexMatches
+  -- , regexMatches
   )where
 
 import ClassyPrelude
-import Text.Regex.PCRE.Heavy
+-- import Text.Regex.PCRE.Heavy
 
 type Validation e a = a -> Maybe e
 
@@ -24,6 +24,6 @@ lengthBetween :: (MonoFoldable a) => Int -> Int -> e -> Validation e a
 lengthBetween minLen maxLen msg val =
   rangeBetween minLen maxLen msg (length val)
 
-regexMatches :: Regex -> e -> Validation e Text
-regexMatches regex msg val =
-  if val =~ regex then Nothing else Just msg
+-- regexMatches :: Regex -> e -> Validation e Text
+-- regexMatches regex msg val =
+--   if val =~ regex then Nothing else Just msg

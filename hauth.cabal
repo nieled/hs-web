@@ -43,7 +43,6 @@ library
     , base >=4.7 && <5
     , classy-prelude
     , mtl
-    , pcre-heavy
     , template-haskell
     , time
     , time-lens
@@ -67,7 +66,6 @@ executable hauth-exe
     , classy-prelude
     , hauth
     , mtl
-    , pcre-heavy
     , template-haskell
     , time
     , time-lens
@@ -92,7 +90,6 @@ test-suite hauth-test
     , classy-prelude
     , hauth
     , mtl
-    , pcre-heavy
     , template-haskell
     , time
     , time-lens

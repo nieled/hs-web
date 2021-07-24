@@ -24,7 +24,7 @@ dependencies:
 - classy-prelude
 - time
 - time-lens
-- pcre-heavy
+# - pcre-heavy
 - aeson
 - template-haskell
 - mtl

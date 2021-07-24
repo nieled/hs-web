@@ -15,4 +15,4 @@ data State
   deriving (Show, Eq)
 
 initialState :: State
-initialState = _
+initialState = undefined

@@ -24,10 +24,15 @@ dependencies:
 - classy-prelude
 - time
 - time-lens
+- pcre-heavy
+- aeson
+- template-haskell
 
 default-extensions:
 - NoImplicitPrelude
 - OverloadedStrings
+- QuasiQuotes
+- TemplateHaskell
 
 library:
   source-dirs: src

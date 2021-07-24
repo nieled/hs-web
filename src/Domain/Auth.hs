@@ -1,5 +1,32 @@
 {-# LANGUAGE NamedFieldPuns #-}
-module Domain.Auth where
+module Domain.Auth
+  ( -- * Types
+    Auth(..)
+  , Email
+  , mkEmail
+  , rawEmail
+  , Password
+  , mkPassword
+  , rawPassword
+  , UserId
+  , VerificationCode
+  , SessionId
+  , RegistrationError(..)
+  , EmailVerificationError(..)
+  , LoginError(..)
+
+  -- * Ports
+  , AuthRepo(..)
+  , EmailVerificationNotif(..)
+  , SessionRepo(..)
+
+  -- * Use cases
+  , register
+  , verifyEmail
+  , login
+  , resolveSessionId
+  , getUser
+  ) where
 
 import           ClassyPrelude
 import           Control.Monad.Except
@@ -94,9 +121,9 @@ login auth =
   runExceptT $ do
     result <- lift $ findUserByAuth auth
     case result of
-      Nothing -> throwError LoginErrorInvalidAuth
+      Nothing         -> throwError LoginErrorInvalidAuth
       Just (_, False) -> throwError LoginErrorEmailNotVerified
-      Just (uId, _) -> lift $ newSession uId
+      Just (uId, _)   -> lift $ newSession uId
 
 resolveSessionId :: SessionRepo m => SessionId -> m (Maybe UserId)
 resolveSessionId = findUserIdBySessionId

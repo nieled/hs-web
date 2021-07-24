@@ -1,6 +1,7 @@
 module Adapter.InMemory.Auth where
 
 import           ClassyPrelude
+import           Control.Monad.Except
 import           Data.Has
 import qualified Domain.Auth as D
 import           Text.StringRandom
@@ -50,21 +51,93 @@ initialState = State
   , stateSessions = mempty
   }
 
+-- | First, we generate a random VerificationCode using the similar
+-- mechanism as generating SessionId.
+-- Then, we check whether the email is a duplicate by traversing stateAuths.
+-- If it is a duplicate, we return a RegistrationErrorEmailTaken error.
+-- Otherwise, we continue to insert the user’s Auth into stateAuths.
+-- UserId is generated using a counter. We simply increment the counter
+-- by one when generating a new UserId.
+-- Since we also want users to verify their email, we store the Email
+-- along with VerificationCode in stateUnverifiedEmails.
 addAuth :: InMemory r m
         => D.Auth -> m (Either D.RegistrationError D.VerificationCode )
-addAuth = undefined
+addAuth auth = do
+  tvar <- asks getter
+  -- gen verification code
+  vCode <- liftIO $ stringRandomIO "[A-Za-z0-9]{16}"
+  atomically . runExceptT $ do
+    state <- lift $ readTVar tvar
+    -- check wether given email is duplicate
+    let auths = stateAuths state
+        email = D.authEmail auth
+        isDuplicate = any ((email ==) . (D.authEmail . snd)) auths
+    when isDuplicate $ throwError D.RegistrationErrorEmailToken
+    -- update the state
+    let newUserId = stateUserIdCounter state + 1
+        newAuths = (newUserId, auth) : auths
+        unverifieds = stateUnverifiedEmails state
+        newUnverifieds = insertMap vCode email unverifieds
+        newState = state
+          { stateAuths = newAuths
+          , stateUserIdCounter = newUserId
+          , stateUnverifiedEmails = newUnverifieds
+          }
+    lift $ writeTVar tvar newState
+    return vCode
 
+-- | The basic idea is to look up an Email in stateUnverifiedEmails
+-- from the given VerificationCode and move it into stateVerifiedEmails.
+-- Since VerificationCode might not map to any Email, we may throw
+-- EmailVerificationErrorInvalidCode.
 setEmailAsVerified :: InMemory r m
                    => D.VerificationCode -> m (Either D.EmailVerificationError ())
-setEmailAsVerified = undefined
+setEmailAsVerified vCode = do
+  tvar <- asks getter
+  atomically . runExceptT $ do
+    state <- lift $ readTVar tvar
+    let unverifieds = stateUnverifiedEmails state
+        verifieds = stateVerifiedEmails state
+        mayEmail = lookup vCode unverifieds
+    case mayEmail of
+      Nothing -> throwError D.EmailVerificationErrorInvalidCode
+      Just email -> do
+        let newUnverifieds = deleteMap vCode unverifieds
+            newVerifieds = insertSet email verifieds
+            newState = state
+              { stateUnverifiedEmails = newUnverifieds
+              , stateVerifiedEmails = newVerifieds
+              }
+        lift $ writeTVar tvar newState
 
+-- | We first need to look up UserId from the given Auth.
+-- If such Auth is not found, then return Nothing.
+-- If it’s found, then we need to check whether the Email is
+-- verified or not by checking with stateVerifiedEmails.
+-- The result of this check is then put into the return value.
 findUserByAuth :: InMemory r m
                => D.Auth -> m (Maybe (D.UserId, Bool))
-findUserByAuth = undefined
+findUserByAuth auth = do
+  tvar <- asks getter
+  state <- liftIO $ readTVarIO tvar
+  let mayUserId = map fst . find ((auth ==) . snd) $ stateAuths state
+  case mayUserId of
+    Nothing -> return Nothing
+    (Just uId) -> do
+      let verifieds = stateVerifiedEmails state
+          email = D.authEmail auth
+          isVerified = email `elem` verifieds
+      return $ Just (uId, isVerified)
 
+-- | Read stateAuths and find one entry that matches the given UserId
+-- and get the Email out of that entry
 findEmailFromUserId :: InMemory r m
                     => D.UserId -> m (Maybe D.Email)
-findEmailFromUserId = undefined
+findEmailFromUserId uId = do
+  tvar <- asks getter
+  state <- liftIO $ readTVarIO tvar
+  let mayAuth = map snd . find ((uId ==) . fst) $ stateAuths state
+  return $ D.authEmail <$> mayAuth
 
 -- Only for tests
 getNotificationsForEmail :: InMemory r m

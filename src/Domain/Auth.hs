@@ -1,3 +1,4 @@
+{-# LANGUAGE NamedFieldPuns #-}
 module Domain.Auth where
 
 import           ClassyPrelude
@@ -7,15 +8,15 @@ import           Text.Regex.PCRE.Heavy
 
 newtype Email = Email { emailRaw :: Text } deriving (Show, Eq)
 newtype Password = Password { passwordRaw :: Text } deriving (Show, Eq)
+type VerificationCode = Text
+type UserId = Int
+type SessionId = Text
 data Auth
   = Auth
       { authEmail    :: Email
       , authPassword :: Password
       }
   deriving (Show, Eq)
-type VerificationCode = Text
-type UserId = Int
-type SessionId = Text
 
 rawEmail :: Email -> Text
 rawEmail = emailRaw
@@ -38,24 +39,29 @@ mkPassword = validate Password
   , regexMatches [re|[a-z]|] "Should contain lowercase letter"
   ]
 
-data RegistrationError = RegistrationErrorEmailToken
+data RegistrationError
+  = RegistrationErrorEmailToken
   deriving (Show, Eq)
-data EmailValidationErr = EmailValidationErrInvalidEmail
-data PasswordValidationErr = PasswordValidationErrLength Int
+data EmailValidationErr
+  = EmailValidationErrInvalidEmail
+data PasswordValidationErr
+  = PasswordValidationErrLength Int
   | PasswordValidationErrMustContainUpperCase
   | PasswordValidationErrMustContainLowerCase
   | PasswordValidationErrMustContainNumber
 data EmailVerificationError
   = EmailVerificationErrorInvalidCode
-      deriving (Show, Eq)
-data LoginError = LoginErrorInvalidAuth
-    | LoginErrorNotVerified
-      deriving (Show, Eq)
+  deriving (Show, Eq)
+data LoginError
+  = LoginErrorInvalidAuth
+    | LoginErrorEmailNotVerified
+  deriving (Show, Eq)
 
 class Monad m => AuthRepo m where
   addAuth :: Auth -> m (Either RegistrationError VerificationCode)
   setEmailAsVerified :: VerificationCode -> m (Either EmailVerificationError ())
   findUserByAuth :: Auth -> m (Maybe (UserId, Bool))
+  findEmailFromUserId :: UserId -> m (Maybe Email)
 
 class Monad m => EmailVerificationNotif m where
   notifyEmailVerification :: Email -> VerificationCode -> m ()
@@ -73,10 +79,7 @@ instance EmailVerificationNotif IO where
   notifyEmailVerification email vCode =
     putStrLn $ "Notify " <> rawEmail email <> " - " <> vCode
 
-register
-  :: (AuthRepo m, EmailVerificationNotif m)
-  => Auth
-  -> m (Either RegistrationError ())
+register :: (AuthRepo m, EmailVerificationNotif m) => Auth -> m (Either RegistrationError ())
 register auth =
   runExceptT $ do
     vCode <- ExceptT $ addAuth auth
@@ -90,8 +93,13 @@ login :: (AuthRepo m, SessionRepo m) => Auth -> m (Either LoginError SessionId)
 login auth =
   runExceptT $ do
     result <- lift $ findUserByAuth auth
-    -- case result of
-    undefined
+    case result of
+      Nothing -> throwError LoginErrorInvalidAuth
+      Just (_, False) -> throwError LoginErrorEmailNotVerified
+      Just (uId, _) -> lift $ newSession uId
 
 resolveSessionId :: SessionRepo m => SessionId -> m (Maybe UserId)
 resolveSessionId = findUserIdBySessionId
+
+getUser :: AuthRepo m => UserId -> m (Maybe Email)
+getUser = findEmailFromUserId

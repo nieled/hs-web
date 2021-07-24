@@ -27,6 +27,7 @@ dependencies:
 - pcre-heavy
 - aeson
 - template-haskell
+- mtl
 
 default-extensions:
 - NoImplicitPrelude

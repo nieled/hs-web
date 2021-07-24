@@ -61,7 +61,7 @@ initialState = State
 -- Since we also want users to verify their email, we store the Email
 -- along with VerificationCode in stateUnverifiedEmails.
 addAuth :: InMemory r m
-        => D.Auth -> m (Either D.RegistrationError D.VerificationCode )
+        => D.Auth -> m (Either D.RegistrationError D.VerificationCode)
 addAuth auth = do
   tvar <- asks getter
   -- gen verification code

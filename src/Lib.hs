@@ -1,35 +1,50 @@
-{-# LANGUAGE DeriveGeneric #-}
-
 module Lib
     ( someFunc
-    , run
-    , MyException(..)
-    , ServerException(..)
     ) where
 
-import ClassyPrelude
-import Language.Haskell.TH.Syntax (nameBase)
-import Data.Aeson.TH
+import qualified Adapter.InMemory.Auth as M
+import           ClassyPrelude
+import           Control.Monad
+import           Domain.Auth
 
 someFunc :: IO ()
-someFunc = putStrLn "someFunc"
+someFunc = do
+  state <- newTVarIO M.initialState
+  run state action
 
-data ServerException
-  = ServerOnFireException
-  | ServerNotPluggedInException
-  deriving (Show)
-instance Exception ServerException
+action :: App ()
+action = do
+  let email = either undefined id $ mkEmail "ecky@test.com"
+      passw = either undefined id $ mkPassword "1234ABCDefgh"
+      auth = Auth email passw
+  register auth
+  Just vCode <- M.getNotificationsForEmail email
+  verifyEmail vCode
+  Right session <- login auth
+  Just uId <- resolveSessionId session
+  Just registeredEmail <- getUser uId
+  print (session, uId, registeredEmail)
 
-data MyException
-  = ThisException
-  | ThatException
-  deriving (Show)
-instance Exception MyException
+type State = TVar M.State
+newtype App a = App
+  { unApp :: ReaderT State IO a
+  } deriving (Applicative, Functor, Monad, MonadReader State, MonadIO)
 
-run :: IO () -> IO ()
-run action =
-  action
-    `catch` (\e -> putStrLn $ "ServerException: " <> tshow (e::ServerException))
-    `catch` (\e -> putStrLn $ "MyException: " <> tshow (e::MyException))
-    `catchAny` (putStrLn . tshow)
+run :: State -> App a -> IO a
+run state = flip runReaderT state . unApp
 
+instance AuthRepo App where
+  addAuth = M.addAuth
+  setEmailAsVerified = M.setEmailAsVerified
+  findUserByAuth = M.findUserByAuth
+  findEmailFromUserId = M.findEmailFromUserId
+
+instance EmailVerificationNotif App where
+  notifyEmailVerification = M.notifyEmailVerification
+
+instance SessionRepo App where
+  newSession = M.newSession
+  findUserIdBySessionId = M.findUserIdBySessionId
+
+instance MonadFail App where
+  fail = undefined

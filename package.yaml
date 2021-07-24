@@ -38,6 +38,7 @@ default-extensions:
 - TemplateHaskell
 - ConstraintKinds
 - FlexibleContexts
+- GeneralizedNewtypeDeriving
 
 library:
   source-dirs: src

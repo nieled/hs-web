@@ -103,6 +103,9 @@ instance AuthRepo IO where
   addAuth (Auth email pass) = do
     putStrLn $ "adding auth: " <> rawEmail email
     return $ Right "fake verification code"
+  setEmailAsVerified = undefined
+  findUserByAuth = undefined
+  findEmailFromUserId = undefined
 
 instance EmailVerificationNotif IO where
   notifyEmailVerification email vCode =

@@ -3,6 +3,7 @@ module Adapter.InMemory.Auth where
 import           ClassyPrelude
 import           Data.Has
 import qualified Domain.Auth as D
+import           Text.StringRandom
 
 -- | The following computation works for any m that is an instance
 -- of MonadIO and MonadReader r, where r is any structure that has
@@ -71,9 +72,20 @@ notifyEmailVerification = undefined
 
 newSession :: InMemory r m
            => D.UserId -> m D.SessionId
-newSession = undefined
+newSession uId = do
+  tvar <- asks getter
+  sId <- liftIO $ (tshow uId <>) <$> stringRandomIO "[A-Za-z0-9]{16}"
+  atomically $ do
+    state <- readTVar tvar
+    let sessions = stateSessions state
+        newSessions = insertMap sId uId sessions
+        newState = state { stateSessions = newSessions }
+    writeTVar tvar newState
+    return sId
 
 findUserIdBySessionId :: InMemory r m
                       => D.SessionId -> m (Maybe D.UserId)
-findUserIdBySessionId = undefined
+findUserIdBySessionId sId = do
+  tvar <- asks getter
+  liftIO $ lookup sId . stateSessions <$> readTVarIO tvar
 

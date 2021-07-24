@@ -46,6 +46,7 @@ library
     , classy-prelude
     , data-has
     , mtl
+    , string-random
     , template-haskell
     , time
     , time-lens
@@ -72,6 +73,7 @@ executable hauth-exe
     , data-has
     , hauth
     , mtl
+    , string-random
     , template-haskell
     , time
     , time-lens
@@ -99,6 +101,7 @@ test-suite hauth-test
     , data-has
     , hauth
     , mtl
+    , string-random
     , template-haskell
     , time
     , time-lens

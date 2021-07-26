@@ -46,6 +46,7 @@ library
     , base >=4.7 && <5
     , classy-prelude
     , data-has
+    , katip
     , mtl
     , string-random
     , template-haskell
@@ -74,6 +75,7 @@ executable hauth-exe
     , classy-prelude
     , data-has
     , hauth
+    , katip
     , mtl
     , string-random
     , template-haskell
@@ -103,6 +105,7 @@ test-suite hauth-test
     , classy-prelude
     , data-has
     , hauth
+    , katip
     , mtl
     , string-random
     , template-haskell

@@ -1,3 +1,3 @@
-# Changelog for hauth
+# Changelog for hs-web
 
 ## Unreleased changes

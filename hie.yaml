@@ -1,13 +1,13 @@
 cradle:
   stack:
     - path: "./src"
-      component: "hauth:lib"
+      component: "hs-web:lib"
 
     - path: "./app/Main.hs"
-      component: "hauth:exe:hauth-exe"
+      component: "hs-web:exe:hs-web-exe"
 
-    - path: "./app/Paths_hauth.hs"
-      component: "hauth:exe:hauth-exe"
+    - path: "./app/Paths_hs-web.hs"
+      component: "hs-web:exe:hs-web-exe"
 
     - path: "./test"
-      component: "hauth:test:hauth-test"
+      component: "hs-web:test:hs-web-test"

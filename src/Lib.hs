@@ -43,7 +43,7 @@ withKatip :: (LogEnv -> IO a) -> IO a
 withKatip = bracket createLogEnv closeScribes
   where
     createLogEnv = do
-      logEnv <- initLogEnv "HAuth" "prod"
+      logEnv <- initLogEnv "HS-Web" "prod"
       stdoutScribe <- mkHandleScribe ColorIfTerminal stdout (permitItem InfoS) V2
       registerScribe "stdout" stdoutScribe defaultScribeSettings logEnv
 

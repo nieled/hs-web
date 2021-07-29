@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Adapter.InMemory.Auth
+      Adapter.PostgreSQL.Auth
       Domain.Auth
       Domain.Validation
       Lib
@@ -48,6 +49,9 @@ library
     , data-has
     , katip
     , mtl
+    , postgresql-simple
+    , postgresql-simple-migration
+    , resource-pool
     , string-random
     , template-haskell
     , time
@@ -77,6 +81,9 @@ executable hauth-exe
     , hauth
     , katip
     , mtl
+    , postgresql-simple
+    , postgresql-simple-migration
+    , resource-pool
     , string-random
     , template-haskell
     , time
@@ -107,6 +114,9 @@ test-suite hauth-test
     , hauth
     , katip
     , mtl
+    , postgresql-simple
+    , postgresql-simple-migration
+    , resource-pool
     , string-random
     , template-haskell
     , time

@@ -1,4 +1,4 @@
-name: Tests
+name: Unit tests
 
 on:
   pull_request:
@@ -68,7 +68,7 @@ jobs:
           stack-yaml: stack.yaml
           extra-suffix: ""
           stack-args: ""
-  steps:
+    steps:
       - name: Clone project
         uses: actions/checkout@v2
       - name: Cache dependencies

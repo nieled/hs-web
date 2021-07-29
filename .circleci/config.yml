@@ -7,71 +7,24 @@ jobs:
       - checkout
       - restore_cache:
           name: Restore Cached Dependencies
-          keys: 
-            - stack-dependencies-{{ arch }}-{{ checksum "stack.yaml" }}-{{ checksum "package.yaml" }}
-            - stack-dependencies-{{ arch }}-{{ checksum "stack.yaml" }}
+          keys:
+            - hs-web-{{ checksum "stack.yaml" }}-{{ checksum "package.yaml" }}
+            - hs-web-{{ checksum "stack.yaml" }}
       - run:
           name: Resolve/Update Dependencies
-          command: stack setup
-      - run:
-          name: Build src and test dependencies
-          command: stack build --fast --test --bench --only-dependencies -j1
-      - save_cache:
-          key: stack-dependencies-{{ arch }}-{{ checksum "stack.yaml" }}-{{ checksum "package.yaml" }}
-          paths:
-            - "/root/.stack"
-      - run:
-          name: Build src and test
-          command: stack build --fast --test --no-run-tests --bench --no-run-benchmarks
-      - save_cache:
-          key: stack-work-{{ arch }}-{{ .Revision }}
-          paths:
-            - ".stack-work"
-
-  test:
-    docker:
-      - image: fpco/stack-build:lts
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - stack-dependencies-{{ arch }}-{{ checksum "stack.yaml" }}-{{ checksum "package.yaml" }}
-            - stack-dependencies-{{ arch }}-{{ checksum "stack.yaml" }}
-      - restore_cache:
-          key: stack-work-{{ arch }}-{{ .Revision }}
+          command: stack --no-terminal setup
       - run:
           name: Run tests
-          command: stack test
-
-  haddock:
-    docker:
-      - image: fpco/stack-build:lts
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - stack-dependencies-{{ arch }}-{{ checksum "stack.yaml" }}-{{ checksum "package.yaml" }}
-            - stack-dependencies-{{ arch }}-{{ checksum "stack.yaml" }}
-      - restore_cache:
-          key: stack-work-{{ arch }}-{{ .Revision }}
+          command: stack --no-terminal test
       - run:
-          name: Run haddock
-          command: stack haddock --no-haddock-deps
-      - run:
-          name: Move haddock files to a temporary directory
-          command: |
-            mkdir -p /tmp/haddock
-            mv $(stack path --local-install-root)/doc /tmp/haddock
+          name: Install executable
+          command: stack --no-terminal install
+      - save_cache:
+          name: Cache Dependencies
+          key: hs-web-{{ checksum "stack.yaml" }}-{{ checksum "package.yaml" }}
+          paths:
+            - "/root/.stack"
+            - ".stack-work"
       - store_artifacts:
-          path: /tmp/haddock
-
-workflows:
-  build-test:
-    jobs:
-      - build
-      - test:
-          requires:
-            - build
-      - haddock:
-          requires:
-            - build
+          path: ~/.local/bin/hs-web-exe
+          destination: hs-web-exe

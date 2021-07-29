@@ -3,6 +3,7 @@ module Lib
     ) where
 
 import qualified Adapter.InMemory.Auth as M
+import qualified Adapter.PostgreSQL.Auth as PG
 import           ClassyPrelude
 import           Control.Monad
 import           Domain.Auth
@@ -10,13 +11,22 @@ import           Katip
 
 someFunc :: IO ()
 someFunc = withKatip $ \le -> do
-  state <- newTVarIO M.initialState
-  run le state action
+  mState <- newTVarIO M.initialState
+  PG.withState pgCfg $ \pgState -> run le (pgState, mState) action
+  where
+    -- TODO: Improve this by parsing configuration from environment
+    pgCfg = PG.Config
+            { PG.configUrl = "postgresql://localhost/hs-web"
+            , PG.configStripeCount = 2
+            , PG.configMaxOpenConnPerStripe = 5
+            , PG.configIdleConnTimeout = 10
+            }
 
 action :: App ()
 action = do
-  let email = either undefined id $ mkEmail "ecky@test.com"
-      passw = either undefined id $ mkPassword "1234ABCDefgh"
+  let Right email = mkEmail "ecky@test.com"
+      -- passw = either undefined id $ mkPassword "1234ABCDefgh"
+      Right passw = mkPassword "1234ABCDefgh"
       auth = Auth email passw
   register auth
   Just vCode <- M.getNotificationsForEmail email
@@ -26,9 +36,10 @@ action = do
   Just registeredEmail <- getUser uId
   print (session, uId, registeredEmail)
 
-type State = TVar M.State
+type State = (PG.State, TVar M.State)
 newtype App a = App
   -- Same as KatipContextT (ReaderT State IO)
+  -- TODO: Should we derive MonadThrow?
   { unApp :: ReaderT State (KatipContextT IO) a
   } deriving (Applicative, Functor, Monad, MonadReader State, MonadIO
               , KatipContext, Katip)
@@ -48,10 +59,10 @@ withKatip = bracket createLogEnv closeScribes
       registerScribe "stdout" stdoutScribe defaultScribeSettings logEnv
 
 instance AuthRepo App where
-  addAuth = M.addAuth
-  setEmailAsVerified = M.setEmailAsVerified
-  findUserByAuth = M.findUserByAuth
-  findEmailFromUserId = M.findEmailFromUserId
+  addAuth = PG.addAuth
+  setEmailAsVerified = PG.setEmailAsVerified
+  findUserByAuth = PG.findUserByAuth
+  findEmailFromUserId = PG.findEmailFromUserId
 
 instance EmailVerificationNotif App where
   notifyEmailVerification = M.notifyEmailVerification
@@ -61,4 +72,4 @@ instance SessionRepo App where
   findUserIdBySessionId = M.findUserIdBySessionId
 
 instance MonadFail App where
-  fail = undefined
+  fail = error

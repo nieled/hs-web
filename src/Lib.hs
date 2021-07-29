@@ -24,8 +24,9 @@ someFunc = withKatip $ \le -> do
 
 action :: App ()
 action = do
-  let email = either undefined id $ mkEmail "ecky@test.com"
-      passw = either undefined id $ mkPassword "1234ABCDefgh"
+  let Right email = mkEmail "ecky@test.com"
+      -- passw = either undefined id $ mkPassword "1234ABCDefgh"
+      Right passw = mkPassword "1234ABCDefgh"
       auth = Auth email passw
   register auth
   Just vCode <- M.getNotificationsForEmail email
@@ -71,4 +72,4 @@ instance SessionRepo App where
   findUserIdBySessionId = M.findUserIdBySessionId
 
 instance MonadFail App where
-  fail = undefined
+  fail = error

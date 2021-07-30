@@ -1,4 +1,5 @@
 {-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE QuasiQuotes #-}
 module Domain.Auth
   ( -- * Types
     Auth(..)

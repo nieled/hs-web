@@ -1,4 +1,5 @@
 {-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE QuasiQuotes    #-}
 module Domain.Auth
   ( -- * Types
     Auth(..)
@@ -31,8 +32,9 @@ module Domain.Auth
 import           ClassyPrelude
 import           Control.Monad.Except
 import           Domain.Validation
-import Katip
--- import           Text.Regex.PCRE.Heavy
+import           Katip
+    ( KatipContext, Severity (InfoS), katipAddContext, logTM, ls, sl )
+import           Text.RawString.QQ
 
 newtype Email = Email { emailRaw :: Text } deriving (Show, Eq, Ord)
 newtype Password = Password { passwordRaw :: Text } deriving (Show, Eq)
@@ -49,25 +51,24 @@ data Auth
 rawEmail :: Email -> Text
 rawEmail = emailRaw
 
-mkEmail :: Text -> Either [Text] Email
-mkEmail email =
-  -- validate Email
-  -- [ regexMatches
-  --     [re|^[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,64}$|]
-  --     "Not a valid email"
-  -- ]
-  Right $ Email email
+mkEmail :: Text -> Either [EmailValidationErr] Email
+mkEmail = validate Email
+  [ regexMatches
+      [r|^[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,64}$|]
+      EmailValidationErrInvalidEmail
+  ]
 
 rawPassword :: Password -> Text
 rawPassword = passwordRaw
 
-mkPassword :: Text -> Either [Text] Password
-mkPassword = validate Password
-  [ lengthBetween 5 50 "Should be between 5 and 50"
-  -- , regexMatches [re|\d|] "Should contain number"
-  -- , regexMatches [re|[A-Z]|] "Should contain uppercase letter"
-  -- , regexMatches [re|[a-z]|] "Should contain lowercase letter"
+mkPassword :: Text -> Either [PasswordValidationErr] Password
+mkPassword x = validate Password
+  [ lengthBetween 5 50 (PasswordValidationErrLength (length x))
+  , regexMatches [r|\d|] PasswordValidationErrMustContainNumber
+  , regexMatches [r|[A-Z]|] PasswordValidationErrMustContainUpperCase
+  , regexMatches [r|[a-z]|] PasswordValidationErrMustContainLowerCase
   ]
+  x
 
 data RegistrationError
   = RegistrationErrorEmailToken

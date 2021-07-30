@@ -53,6 +53,8 @@ library
     , mtl
     , postgresql-simple
     , postgresql-simple-migration
+    , raw-strings-qq
+    , regex-tdfa
     , resource-pool
     , string-random
     , template-haskell
@@ -86,6 +88,8 @@ executable hs-web-exe
     , mtl
     , postgresql-simple
     , postgresql-simple-migration
+    , raw-strings-qq
+    , regex-tdfa
     , resource-pool
     , string-random
     , template-haskell
@@ -120,6 +124,8 @@ test-suite hs-web-test
     , mtl
     , postgresql-simple
     , postgresql-simple-migration
+    , raw-strings-qq
+    , regex-tdfa
     , resource-pool
     , string-random
     , template-haskell

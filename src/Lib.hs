@@ -25,12 +25,11 @@ someFunc = withKatip $ \le -> do
 action :: App ()
 action = do
   let Right email = mkEmail "ecky@test.com"
-      -- passw = either undefined id $ mkPassword "1234ABCDefgh"
       Right passw = mkPassword "1234ABCDefgh"
       auth = Auth email passw
-  register auth
+  _ <- register auth
   Just vCode <- M.getNotificationsForEmail email
-  verifyEmail vCode
+  _ <- verifyEmail vCode
   Right session <- login auth
   Just uId <- resolveSessionId session
   Just registeredEmail <- getUser uId

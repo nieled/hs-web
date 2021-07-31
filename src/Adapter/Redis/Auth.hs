@@ -45,6 +45,6 @@ newSession userId = do
 findUserIdBySessionId :: Redis r m => D.SessionId -> m (Maybe D.UserId)
 findUserIdBySessionId sId = do
   result <- withConn $ R.get (encodeUtf8 sId)
-  return $ case result of
-    Right (Just uIdStr) -> readMay . unpack . decodeUtf8 $ uIdStr
+  case result of
+    Right (Just uIdStr) -> return $ readMay . unpack . decodeUtf8 $ uIdStr
     err -> throwString $ "Unexpected Redis error: " <> show err

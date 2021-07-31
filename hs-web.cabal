@@ -27,6 +27,7 @@ library
   exposed-modules:
       Adapter.InMemory.Auth
       Adapter.PostgreSQL.Auth
+      Adapter.Redis.Auth
       Domain.Auth
       Domain.Validation
       Lib
@@ -47,6 +48,7 @@ library
     , base >=4.7 && <5
     , classy-prelude
     , data-has
+    , hedis
     , katip
     , mtl
     , postgresql-simple
@@ -80,6 +82,7 @@ executable hs-web-exe
     , base >=4.7 && <5
     , classy-prelude
     , data-has
+    , hedis
     , hs-web
     , katip
     , mtl
@@ -115,6 +118,7 @@ test-suite hs-web-test
     , base >=4.7 && <5
     , classy-prelude
     , data-has
+    , hedis
     , hs-web
     , katip
     , mtl

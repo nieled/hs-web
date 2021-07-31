@@ -35,6 +35,7 @@ dependencies:
 - resource-pool
 - postgresql-simple
 - postgresql-simple-migration
+- hedis
 
 default-extensions:
 - NoImplicitPrelude

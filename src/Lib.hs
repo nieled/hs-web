@@ -8,6 +8,7 @@ import           ClassyPrelude
 import           Control.Monad
 import           Domain.Auth
 import           Katip
+import           Text.StringRandom
 
 someFunc :: IO ()
 someFunc = withKatip $ \le -> do
@@ -24,16 +25,23 @@ someFunc = withKatip $ \le -> do
 
 action :: App ()
 action = do
-  let Right email = mkEmail "ecky@test.com"
-      Right passw = mkPassword "1234ABCDefgh"
+  randEmail <- liftIO $ stringRandomIO "[a-z0-9]{5}@test\\.com"
+  let email = either undefined id $ mkEmail randEmail
+      passw = either undefined id $ mkPassword "1234ABCDefgh"
       auth = Auth email passw
   _ <- register auth
-  Just vCode <- M.getNotificationsForEmail email
+  vCode <- pollNotif email
   _ <- verifyEmail vCode
-  Right session <- login auth
-  Just uId <- resolveSessionId session
+  Right session        <- login auth
+  Just uId             <- resolveSessionId session
   Just registeredEmail <- getUser uId
   print (session, uId, registeredEmail)
+  where
+    pollNotif email = do
+      result <- M.getNotificationsForEmail email
+      case result of
+        Nothing    -> pollNotif email
+        Just vCode -> return vCode
 
 type State = (PG.State, TVar M.State)
 newtype App a = App

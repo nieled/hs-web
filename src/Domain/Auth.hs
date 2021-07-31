@@ -64,7 +64,7 @@ rawPassword = passwordRaw
 mkPassword :: Text -> Either [PasswordValidationErr] Password
 mkPassword x = validate Password
   [ lengthBetween 5 50 (PasswordValidationErrLength (length x))
-  , regexMatches [r|\d|] PasswordValidationErrMustContainNumber
+  , regexMatches [r|[0-9]|] PasswordValidationErrMustContainNumber
   , regexMatches [r|[A-Z]|] PasswordValidationErrMustContainUpperCase
   , regexMatches [r|[a-z]|] PasswordValidationErrMustContainLowerCase
   ]
@@ -80,6 +80,7 @@ data PasswordValidationErr
   | PasswordValidationErrMustContainUpperCase
   | PasswordValidationErrMustContainLowerCase
   | PasswordValidationErrMustContainNumber
+  deriving (Show)
 data EmailVerificationError
   = EmailVerificationErrorInvalidCode
   deriving (Show, Eq)

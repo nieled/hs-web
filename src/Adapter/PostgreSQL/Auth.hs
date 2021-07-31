@@ -105,7 +105,7 @@ setEmailAsVerified vCode = do
     qry = "update auths \
           \set is_email_verified = 't' \
           \where email_verification_code = ? \
-          \returning id, case (email as text)"
+          \returning id, cast (email as text)"
 
 findUserByAuth :: PG r m
                => D.Auth -> m (Maybe (D.UserId, Bool))

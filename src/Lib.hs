@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -Wno-deprecations #-}
 module Lib
     ( someFunc
     ) where
@@ -6,9 +7,18 @@ import qualified Adapter.InMemory.Auth as M
 import qualified Adapter.PostgreSQL.Auth as PG
 import           ClassyPrelude
 import           Control.Monad
+import           Control.Monad.Catch
 import           Domain.Auth
 import           Katip
 import           Text.StringRandom
+
+type State = (PG.State, TVar M.State)
+newtype App a = App
+  -- Same as KatipContextT (ReaderT State IO)
+  -- TODO: Should we derive MonadThrow?
+  { unApp :: ReaderT State (KatipContextT IO) a
+  } deriving (Applicative, Functor, Monad, MonadReader State, MonadIO
+              , KatipContext, Katip, MonadThrow, MonadCatch)
 
 someFunc :: IO ()
 someFunc = withKatip $ \le -> do
@@ -29,9 +39,9 @@ action = do
   let email = either undefined id $ mkEmail randEmail
       passw = either undefined id $ mkPassword "1234ABCDefgh"
       auth = Auth email passw
-  _ <- register auth
+  register auth
   vCode <- pollNotif email
-  _ <- verifyEmail vCode
+  verifyEmail vCode
   Right session        <- login auth
   Just uId             <- resolveSessionId session
   Just registeredEmail <- getUser uId
@@ -43,14 +53,6 @@ action = do
         Nothing    -> pollNotif email
         Just vCode -> return vCode
 
-type State = (PG.State, TVar M.State)
-newtype App a = App
-  -- Same as KatipContextT (ReaderT State IO)
-  -- TODO: Should we derive MonadThrow?
-  { unApp :: ReaderT State (KatipContextT IO) a
-  } deriving (Applicative, Functor, Monad, MonadReader State, MonadIO
-              , KatipContext, Katip)
-
 run :: LogEnv -> State -> App a -> IO a
 run le state
   = runKatipContextT le () mempty
@@ -58,7 +60,7 @@ run le state
     . unApp
 
 withKatip :: (LogEnv -> IO a) -> IO a
-withKatip = bracket createLogEnv closeScribes
+withKatip = ClassyPrelude.bracket createLogEnv closeScribes
   where
     createLogEnv = do
       logEnv <- initLogEnv "HS-Web" "prod"

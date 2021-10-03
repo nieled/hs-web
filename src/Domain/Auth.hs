@@ -37,7 +37,25 @@ import           Katip
 import           Text.RawString.QQ
 
 newtype Email = Email { emailRaw :: Text } deriving (Show, Eq, Ord)
+
+mkEmail :: Text -> Either [ErrMsg] Email
+mkEmail = validate Email
+  [ regexMatches
+      [r|^[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,64}$|]
+      "Not a valid email"
+  ]
+
 newtype Password = Password { passwordRaw :: Text } deriving (Show, Eq)
+
+mkPassword :: Text -> Either [ErrMsg] Password
+mkPassword x = validate Password
+  [ lengthBetween 5 50 "Should between 5 and 50"
+  , regexMatches [r|[0-9]|] "Should contain number"
+  , regexMatches [r|[A-Z]|] "Should contain uppercase letter"
+  , regexMatches [r|[a-z]|] "Should contain lowercase letter"
+  ]
+  x
+
 type VerificationCode = Text
 type UserId = Int
 type SessionId = Text
@@ -51,30 +69,15 @@ data Auth
 rawEmail :: Email -> Text
 rawEmail = emailRaw
 
-mkEmail :: Text -> Either [EmailValidationErr] Email
-mkEmail = validate Email
-  [ regexMatches
-      [r|^[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,64}$|]
-      EmailValidationErrInvalidEmail
-  ]
-
 rawPassword :: Password -> Text
 rawPassword = passwordRaw
-
-mkPassword :: Text -> Either [PasswordValidationErr] Password
-mkPassword x = validate Password
-  [ lengthBetween 5 50 (PasswordValidationErrLength (length x))
-  , regexMatches [r|[0-9]|] PasswordValidationErrMustContainNumber
-  , regexMatches [r|[A-Z]|] PasswordValidationErrMustContainUpperCase
-  , regexMatches [r|[a-z]|] PasswordValidationErrMustContainLowerCase
-  ]
-  x
 
 data RegistrationError
   = RegistrationErrorEmailToken
   deriving (Show, Eq)
 data EmailValidationErr
   = EmailValidationErrInvalidEmail
+  deriving (Show, Eq)
 data PasswordValidationErr
   = PasswordValidationErrLength Int
   | PasswordValidationErrMustContainUpperCase

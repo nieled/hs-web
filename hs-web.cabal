@@ -27,6 +27,8 @@ library
   exposed-modules:
       Adapter.InMemory.Auth
       Adapter.PostgreSQL.Auth
+      Adapter.RabbitMQ.Auth
+      Adapter.RabbitMQ.Common
       Adapter.Redis.Auth
       Domain.Auth
       Domain.Validation
@@ -45,11 +47,14 @@ library
       GeneralizedNewtypeDeriving
   build-depends:
       aeson
+    , amqp
     , base >=4.7 && <5
     , classy-prelude
     , data-has
+    , exceptions
     , hedis
     , katip
+    , lifted-base
     , mtl
     , postgresql-simple
     , postgresql-simple-migration
@@ -79,12 +84,15 @@ executable hs-web-exe
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
+    , amqp
     , base >=4.7 && <5
     , classy-prelude
     , data-has
+    , exceptions
     , hedis
     , hs-web
     , katip
+    , lifted-base
     , mtl
     , postgresql-simple
     , postgresql-simple-migration
@@ -115,12 +123,15 @@ test-suite hs-web-test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
+    , amqp
     , base >=4.7 && <5
     , classy-prelude
     , data-has
+    , exceptions
     , hedis
     , hs-web
     , katip
+    , lifted-base
     , mtl
     , postgresql-simple
     , postgresql-simple-migration

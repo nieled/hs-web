@@ -25,6 +25,8 @@ source-repository head
 
 library
   exposed-modules:
+      Adapter.HTTP.Common
+      Adapter.HTTP.Main
       Adapter.InMemory.Auth
       Adapter.PostgreSQL.Auth
       Adapter.RabbitMQ.Auth
@@ -49,10 +51,15 @@ library
       aeson
     , amqp
     , base >=4.7 && <5
+    , blaze-builder
     , classy-prelude
+    , cookie
     , data-has
+    , digestive-functors
+    , digestive-functors-aeson
     , exceptions
     , hedis
+    , http-types
     , katip
     , lifted-base
     , mtl
@@ -61,10 +68,13 @@ library
     , raw-strings-qq
     , regex-tdfa
     , resource-pool
+    , scotty
     , string-random
     , template-haskell
     , time
     , time-lens
+    , wai
+    , wai-extra
   default-language: Haskell2010
 
 executable hs-web-exe
@@ -86,11 +96,16 @@ executable hs-web-exe
       aeson
     , amqp
     , base >=4.7 && <5
+    , blaze-builder
     , classy-prelude
+    , cookie
     , data-has
+    , digestive-functors
+    , digestive-functors-aeson
     , exceptions
     , hedis
     , hs-web
+    , http-types
     , katip
     , lifted-base
     , mtl
@@ -99,10 +114,13 @@ executable hs-web-exe
     , raw-strings-qq
     , regex-tdfa
     , resource-pool
+    , scotty
     , string-random
     , template-haskell
     , time
     , time-lens
+    , wai
+    , wai-extra
   default-language: Haskell2010
 
 test-suite hs-web-test
@@ -125,11 +143,16 @@ test-suite hs-web-test
       aeson
     , amqp
     , base >=4.7 && <5
+    , blaze-builder
     , classy-prelude
+    , cookie
     , data-has
+    , digestive-functors
+    , digestive-functors-aeson
     , exceptions
     , hedis
     , hs-web
+    , http-types
     , katip
     , lifted-base
     , mtl
@@ -138,8 +161,11 @@ test-suite hs-web-test
     , raw-strings-qq
     , regex-tdfa
     , resource-pool
+    , scotty
     , string-random
     , template-haskell
     , time
     , time-lens
+    , wai
+    , wai-extra
   default-language: Haskell2010

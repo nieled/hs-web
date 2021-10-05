@@ -84,7 +84,7 @@ addAuth (D.Auth email pass) = do
     Right _ -> throwString "Should not happen: PG doesn't return userId"
     Left err@SqlError{sqlState = state, sqlErrorMsg = msg} ->
       if state == "23505" && "auths_email_key" `isInfixOf` msg
-        then return $ Left D.RegistrationErrorEmailToken
+        then return $ Left D.RegistrationErrorEmailTaken
         else throwString $ "Unhandled PG exception" <> show err
   where
     qry = "insert into auths \

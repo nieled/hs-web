@@ -11,6 +11,24 @@ packages:
       sha256: 186c759339e91c18b51879a5795f6cf8db2639001eb6b0e7c017d90e5dfa6ab2
   original:
     hackage: postgresql-simple-migration-0.1.15.0
+- completed:
+    hackage: digestive-functors-0.8.4.2@sha256:badff1797b6dcd860a48ed4558985b2f6bec501e1016fa5afd9d7d6b0d8e4c08,3364
+    pantry-tree:
+      size: 1682
+      sha256: 53ce82c7f0c60c10009b1b764b537117a4ab402bbe1a147fba5ad2263acb3025
+  original:
+    hackage: digestive-functors-0.8.4.2
+- completed:
+    name: digestive-functors-aeson
+    version: 1.1.27
+    git: https://github.com/nieled/digestive-functors-aeson.git
+    pantry-tree:
+      size: 542
+      sha256: d1e38b8874a3c7b612a45b33218092c607635fe0d5f6d1ff114cc58c34abc177
+    commit: f0a22475762566808a8f64961cf59db7a4ab3c05
+  original:
+    git: https://github.com/nieled/digestive-functors-aeson.git
+    commit: f0a22475762566808a8f64961cf59db7a4ab3c05
 snapshots:
 - completed:
     size: 585603

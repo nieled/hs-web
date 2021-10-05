@@ -73,7 +73,7 @@ addAuth auth = do
     let auths = stateAuths state
         email = D.authEmail auth
         isDuplicate = any ((email ==) . (D.authEmail . snd)) auths
-    when isDuplicate $ throwError D.RegistrationErrorEmailToken
+    when isDuplicate $ throwError D.RegistrationErrorEmailTaken
     -- update the state
     let newUserId = stateUserIdCounter state + 1
         newAuths = (newUserId, auth) : auths

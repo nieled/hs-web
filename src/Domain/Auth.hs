@@ -73,7 +73,7 @@ rawPassword :: Password -> Text
 rawPassword = passwordRaw
 
 data RegistrationError
-  = RegistrationErrorEmailToken
+  = RegistrationErrorEmailTaken
   deriving (Show, Eq)
 data EmailValidationErr
   = EmailValidationErrInvalidEmail

@@ -3,6 +3,7 @@ module Lib
     ( main
     ) where
 
+import qualified Adapter.HTTP.Main as HTTP
 import qualified Adapter.InMemory.Auth as M
 import qualified Adapter.PostgreSQL.Auth as PG
 import qualified Adapter.RabbitMQ.Auth as MQAuth
@@ -35,7 +36,6 @@ instance AuthRepo App where
   findEmailFromUserId = PG.findEmailFromUserId
 
 instance EmailVerificationNotif App where
-  -- notifyEmailVerification = M.notifyEmailVerification
   notifyEmailVerification = MQAuth.notifyEmailVerification
 
 instance MonadFail App where
@@ -53,7 +53,7 @@ withKatip = ClassyPrelude.bracket createLogEnv closeScribes
       stdoutScribe <- mkHandleScribe ColorIfTerminal stdout (permitItem InfoS) V2
       registerScribe "stdout" stdoutScribe defaultScribeSettings logEnv
 
-withState :: (LogEnv -> State -> IO ()) -> IO ()
+withState :: (Int -> LogEnv -> State -> IO ()) -> IO ()
 withState action =
   withKatip $ \le -> do
     mState <- newTVarIO M.initialState
@@ -61,7 +61,7 @@ withState action =
       Redis.withState redisCfg $ \redisState ->
         MQ.withState mqCfg 16 $ \mqState -> do
           let state = (pgState, redisState, mqState, mState)
-          action le state
+          action port le state
   where
     -- TODO: Improve this by parsing configuration from environment
     mqCfg = "amqp://guest:guest@localhost:5672/%2F"
@@ -73,13 +73,14 @@ withState action =
       , PG.configMaxOpenConnPerStripe = 5
       , PG.configIdleConnTimeout = 10
       }
+    port = 3000
 
 main :: IO ()
 main =
-  withState $ \le state@(_, _, mqState ,_) -> do
+  withState $ \port le state@(_, _, mqState ,_) -> do
     let runner = run le state
     MQAuth.init mqState runner
-    runner action
+    HTTP.main port runner
 
 action :: App ()
 action = do

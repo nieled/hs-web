@@ -47,6 +47,11 @@ dependencies:
 - blaze-builder
 - digestive-functors
 - digestive-functors-aeson
+- blaze-html
+- digestive-functors-blaze
+- digestive-functors-scotty
+- wai-middleware-static
+- warp
 
 default-extensions:
 - NoImplicitPrelude

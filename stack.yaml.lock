@@ -19,6 +19,20 @@ packages:
   original:
     hackage: digestive-functors-0.8.4.2
 - completed:
+    hackage: digestive-functors-blaze-0.6.2.0@sha256:3aae259265b8517fb7efe2a7681d846e01f52c22f49f193aff550a1630f182d0,841
+    pantry-tree:
+      size: 289
+      sha256: 2584d35cf054e3daa2f961d7b68e1c0bafd68f99284c4e76509fc455a0380315
+  original:
+    hackage: digestive-functors-blaze-0.6.2.0
+- completed:
+    hackage: digestive-functors-scotty-0.2.0.2@sha256:5d7d94c850207910683a4ac60426bf3fb0d62ba2d15cd0bfb758cbee51417580,1171
+    pantry-tree:
+      size: 238
+      sha256: 4a7fd3fe2c0e4a328d2d74508fff31cf8aa3243cdbf08731d6d7475014dc60ef
+  original:
+    hackage: digestive-functors-scotty-0.2.0.2
+- completed:
     name: digestive-functors-aeson
     version: 1.1.27
     git: https://github.com/nieled/digestive-functors-aeson.git

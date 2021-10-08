@@ -42,6 +42,8 @@ packages:
 extra-deps:
   - postgresql-simple-migration-0.1.15.0
   - digestive-functors-0.8.4.2
+  - digestive-functors-blaze-0.6.2.0
+  - digestive-functors-scotty-0.2.0.2
   - git: https://github.com/nieled/digestive-functors-aeson.git
     commit: f0a22475762566808a8f64961cf59db7a4ab3c05
 

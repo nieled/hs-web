@@ -17,7 +17,13 @@ import           Web.Scotty.Trans
 
 -- * Routes
 
-routes :: ( ScottyError e, MonadIO m)
+routes :: ( ScottyError e
+          , MonadIO m
+          , KatipContext m
+          , AuthRepo m
+          , EmailVerificationNotif m
+          , SessionRepo m
+          )
   => ScottyT e m ()
 routes = do
   -- home
@@ -36,4 +42,18 @@ routes = do
   post "/auth/login" undefined
 
   -- get user
-  get "/users" undefined
+  get "/users" $ do
+    userId <- Adapter.HTTP.Web.Common.reqCurrentUserId
+    mayEmail <- lift $ getUser userId
+    case mayEmail of
+      Nothing -> stringError "Should not happen: email is not found"
+      Just email ->
+        renderHtml $ usersPage (rawEmail email)
+
+usersPage :: Text -> H.Html
+usersPage email =
+  mainLayout "Users" $ do
+    H.div $
+      H.h1 "Users"
+    H.div $
+      H.toHtml email

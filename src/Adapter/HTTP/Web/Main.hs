@@ -28,7 +28,9 @@ routes cachingStrategy = do
   middleware $
     gzip $ def { gzipFiles = GzipCompress }
   middleware $
-    staticPolicy' cachingStrategy (addBase "src/Adapter/HTTP/Web")
+    staticPolicyWithOptions
+      defaultOptions { cacheContainer = cachingStrategy }
+      (addBase "src/Adapter/HTTP/Web")
 
   Auth.routes
 

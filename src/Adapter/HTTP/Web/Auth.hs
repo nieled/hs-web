@@ -31,8 +31,22 @@ routes = do
     redirect "/users"
 
   -- register
-  get "/auth/register" undefined
-  post "/auth/register" undefined
+  get "/auth/register" $ do
+    view <- DF.getForm "auth" authForm
+    renderHtml $ registerPage view []
+  post "/auth/register" $ do
+    (view, mayAuth) <- runForm "auth" authForm
+    case mayAuth of
+      Nothing ->
+        renderHtml $ registerPage view []
+      Just auth -> do
+        result <- lift $ register auth
+        case result of
+          Left RegistrationErrorEmailTaken ->
+            renderHtml $ registerPage view ["Email has been taken"]
+          Right _ -> do
+            v <- DF.getForm "auth" authForm
+            renderHtml $ registerPage v ["Registered succesfully"]
 
   -- verify email
   get "/auth/verifyEmail/:code" $ do
@@ -72,3 +86,45 @@ verifyEmailPage msg =
     H.h1 "Email Verification"
     H.div $ H.toHtml msg
     H.div $ H.a ! A.href "/auth/login" $ "Login"
+
+authForm :: (Monad m) => DF.Form [Text] m Auth
+authForm =
+  Auth <$> "email" .: emailForm
+       <*> "password" .: passwordForm
+  where
+    emailForm = DF.validate (toResult . mkEmail) (DF.text Nothing)
+    passwordForm = DF.validate (toResult . mkPassword) (DF.text Nothing)
+
+authFormLayout :: DF.View [Text] -> Text -> Text -> [Text] -> H.Html
+authFormLayout view formTitle actioin msgs =
+  formLayout view action $ do
+    H.h2 $
+      H.toHtml formTitle
+    H.div $
+      errorList msgs
+    H.div $ do
+      H.label "Email"
+      DH.inputText "email" view
+      H.div $
+        errorList' "email"
+    H.div $ do
+      H.label "Password"
+      DH.inputPassword "password" view
+      H.div $
+        errorList' "password"
+    H.input ! A.type_ "submit" ! A.value "Submit"
+  where
+    errorList' path =
+      errorList . mconcat $ DF.errors path view
+    errorList =
+      H.ul . concatMap errorItem
+    errorItem =
+      H.li . H.toHtml
+
+registerPage :: DF.View [Text] -> [Text] -> H.Html
+registerPage view msgs =
+  mainLayout "Register" $ do
+    H.div $
+      authFormLayout view "Register" "/auth/register" msgs
+    H.div $
+      H.a ! A.href "/auth/login" $ "Login"

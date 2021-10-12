@@ -30,6 +30,12 @@ mainLayout title content =
              ! A.type_ "image/png"
              ! A.href path
 
+formLayout :: DF.View a -> Text -> H.Html -> H.Html
+formLayout view action =
+  H.form  ! A.method  "POST"
+          ! A.enctype (H.toValue $ show $ DF.viewEncType view)
+          ! A.action  (H.toValue action)
+
 -- * Sessions
 
 -- | It internally calls getCurrentUserId. However, it will redirect the user to the /auth/login endpoint if the user is not logged in.

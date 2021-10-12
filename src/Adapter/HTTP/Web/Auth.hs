@@ -84,7 +84,8 @@ routes = do
     userId <- Adapter.HTTP.Web.Common.reqCurrentUserId
     mayEmail <- lift $ getUser userId
     case mayEmail of
-      Nothing -> stringError "Should not happen: email is not found"
+      Nothing ->
+        raise $ stringError "Should not happen: email is not found"
       Just email ->
         renderHtml $ usersPage (rawEmail email)
 
@@ -112,7 +113,7 @@ authForm =
     passwordForm = DF.validate (toResult . mkPassword) (DF.text Nothing)
 
 authFormLayout :: DF.View [Text] -> Text -> Text -> [Text] -> H.Html
-authFormLayout view formTitle actioin msgs =
+authFormLayout view formTitle action msgs =
   formLayout view action $ do
     H.h2 $
       H.toHtml formTitle

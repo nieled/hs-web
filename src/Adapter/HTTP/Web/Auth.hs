@@ -60,8 +60,24 @@ routes = do
 
 
   -- login
-  get "/auth/login" undefined
-  post "/auth/login" undefined
+  get "/auth/login" $ do
+    view <- DF.getForm "auth" authForm
+    renderHtml $ loginPage view []
+  post "/auth/login" $ do
+    (view, myAuth) <- runForm "auth" authForm
+    case myAuth of
+      Nothing ->
+        renderHtml $ loginPage view []
+      Just auth -> do
+        result <- lift $ login auth
+        case result of
+          Left LoginErrorEmailNotVerified  ->
+            renderHtml $ loginPage view ["Email has not been verified"]
+          Left LoginErrorInvalidAuth   ->
+            renderHtml $ loginPage view ["Email/password is incorrect"]
+          Right sId -> do
+            setSessionIdInCookie sId
+            redirect "/"
 
   -- get user
   get "/users" $ do
@@ -128,3 +144,11 @@ registerPage view msgs =
       authFormLayout view "Register" "/auth/register" msgs
     H.div $
       H.a ! A.href "/auth/login" $ "Login"
+
+loginPage :: DF.View [Text] -> [Text] -> H.Html
+loginPage view msgs =
+  mainLayout "Login" $ do
+    H.div $
+      authFormLayout view "Login" "/auth/login" msgs
+    H.div $
+      H.a ! A.href "/auth/register" $ "Register"

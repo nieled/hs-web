@@ -35,7 +35,15 @@ routes = do
   post "/auth/register" undefined
 
   -- verify email
-  get "/auth/verifyEmail/:code" undefined
+  get "/auth/verifyEmail/:code" $ do
+    code <- param "code" `rescue` const (return "")
+    result <- lift $ verifyEmail code
+    case result of
+      Left EmailVerificationErrorInvalidCode ->
+        renderHtml $ verifyEmailPage "The verification code is invalid"
+      Right _ ->
+        renderHtml $ verifyEmailPage "Your email has been verified"
+
 
   -- login
   get "/auth/login" undefined
@@ -57,3 +65,10 @@ usersPage email =
       H.h1 "Users"
     H.div $
       H.toHtml email
+
+verifyEmailPage :: Text -> H.Html
+verifyEmailPage msg =
+  mainLayout "Email Verification" $ do
+    H.h1 "Email Verification"
+    H.div $ H.toHtml msg
+    H.div $ H.a ! A.href "/auth/login" $ "Login"

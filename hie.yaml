@@ -6,7 +6,7 @@ cradle:
     - path: "./app/Main.hs"
       component: "hs-web:exe:hs-web-exe"
 
-    - path: "./app/Paths_hs-web.hs"
+    - path: "./app/Paths_hs_web.hs"
       component: "hs-web:exe:hs-web-exe"
 
     - path: "./test"
